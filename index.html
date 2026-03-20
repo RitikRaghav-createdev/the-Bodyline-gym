@@ -889,11 +889,15 @@
 
   /* REVEAL ON SCROLL */
   .reveal {
-    opacity: 0;
-    transform: translateY(40px);
+    opacity: 1;
+    transform: translateY(0);
     transition: opacity 0.8s ease, transform 0.8s ease;
   }
-  .reveal.visible {
+  .reveal.hidden {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  .reveal.hidden.visible {
     opacity: 1;
     transform: translateY(0);
   }
@@ -1368,17 +1372,24 @@
     nav.classList.toggle('scrolled', window.scrollY > 60);
   });
 
-  // Scroll reveal
+  // Scroll reveal - add hidden first, then animate in
   const reveals = document.querySelectorAll('.reveal');
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(e => {
-      if (e.isIntersecting) {
-        e.target.classList.add('visible');
-      }
-    });
-  }, { threshold: 0.12 });
+  
+  // Only animate if IntersectionObserver is supported
+  if ('IntersectionObserver' in window) {
+    reveals.forEach(el => el.classList.add('hidden'));
+    
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          e.target.classList.add('visible');
+          e.target.classList.remove('hidden');
+        }
+      });
+    }, { threshold: 0.08 });
 
-  reveals.forEach(el => observer.observe(el));
+    reveals.forEach(el => observer.observe(el));
+  }
 
   // Highlight today's hours
   const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
